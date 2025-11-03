@@ -1,0 +1,22 @@
+<resources>
+    <!-- App Name -->
+    <string name="app_name">Giphy</string>
+
+    <!-- Giphy Search -->
+    <string name="search_gifs">Search GIFs</string>
+    <string name="trending">Trending</string>
+    <string name="search_hint">Search for GIFs</string>
+    <string name="no_results">No GIFs found</string>
+    <string name="try_different_search">Try a different search term</string>
+    <string name="loading">Loading...</string>
+    <string name="error_loading_gifs">Error loading GIFs</string>
+    <string name="retry">Retry</string>
+
+    <!-- GIF Details -->
+    <string name="gif_details">GIF Details</string>
+    <string name="rating">Rating</string>
+    <string name="size">Size</string>
+    <string name="creator">Creator</string>
+    <string name="gif_not_found">GIF not found</string>
+
+</resources>
