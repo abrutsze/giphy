@@ -1,93 +1,218 @@
-# mobile-app
+# GiphyCompose
 
+Android application for browsing GIF images from Giphy API, demonstrating modern Android development approaches.
 
+---
 
-## Getting started
+## 📱 About the Project
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+**GiphyCompose** is an application for viewing and searching GIF animations via Giphy API.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+### Core Features:
 
-## Add your files
+- **Browse Trending GIFs** — feed of current popular GIF images
+- **Search by Keywords** — GIF search with debounce effect (500 ms)
+- **Detailed View** — detailed GIF information (rating, dimensions, author)
+- **Infinite Scroll** — pagination for loading large amounts of content
+- **Optimized GIF Loading** — using Coil with custom decoder configuration
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+---
 
-```
-cd existing_repo
-git remote add origin https://gitlab.com/growepic/mobile-app.git
-git branch -M main
-git push -uf origin main
-```
+## 🏗️ Project Architecture
 
-## Integrate with your tools
+### Clean Architecture
 
-- [ ] [Set up project integrations](https://gitlab.com/growepic/mobile-app/-/settings/integrations)
+The project is built on **Clean Architecture** principles with clear layer separation:
 
-## Collaborate with your team
+#### **Data Layer**
+- **Repository Interface**: `feature/giphy/src/main/kotlin/com/android/giphy/data/GiphyRepository.kt`
+- **Repository Implementation**: `feature/giphy/src/main/kotlin/com/android/giphy/data/GiphyRepositoryImpl.kt`
+- **API Interface**: `core/network/api/src/main/kotlin/com/android/network/api/GiphyApi.kt`
+- Network requests handling via Ktor Client
+- Error handling using `Result<T>`
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+#### **Domain Layer**
+- **Use Cases**:
+  - `SearchGifsUseCase.kt` — GIF search
+  - `GetTrendingGifsUseCase.kt` — trending GIFs retrieval
+  - `GetGifByIdUseCase.kt` — specific GIF retrieval by ID
+- **Mappers**:
+  - `GiphyDomainMapper.kt` — data model to UI model transformation
+- Pure business logic without Android Framework dependencies
 
-## Test and Deploy
+#### **Presentation Layer**
+- **MVI Pattern** — Model-View-Intent for UI state management
+- **ViewModels** — business logic and screen state handling
+- **Screens** — Composable functions for UI rendering
 
-Use the built-in continuous integration in GitLab.
+---
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+### MVI (Model-View-Intent) Pattern
 
-***
+The project uses a custom **MVI pattern** implementation for state management:
 
-# Editing this README
+#### Base Infrastructure (`common/mvi`):
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+- **MviBaseViewModel** — base ViewModel for handling State, Actions, Intents, Effects
+- **MviState** — marker interface for states
+- **MviAction** — internal actions that trigger state changes
+- **MviIntent** — user intents (e.g., clicks, text input)
+- **MviEffect** — one-time side effects (navigation, toast messages)
+- **Reducer** — pure function for reducing actions to new states
 
-## Suggestions for a good README
+#### MVI Advantages:
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+- ✅ Unidirectional Data Flow
+- ✅ Immutable State
+- ✅ Predictable UI behavior
+- ✅ Easy testing (pure functions)
+- ✅ Centralized state management
 
-## Name
-Choose a self-explaining name for your project.
+---
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### Modular Architecture
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+The project is divided into **multiple independent modules** with clear responsibility boundaries:
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+#### **Core Modules** (`core/`)
+Infrastructure modules with API and Implementation separation:
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+- **`core:network:api`** — network interfaces
+- **`core:network:impl`** — Ktor Client implementation
+- **`core:dispatchers:api`** — dispatcher provider interface
+- **`core:dispatchers:impl`** — coroutine dispatchers implementation
+- **`core:datastore:api`** — DataStore interface
+- **`core:datastore:impl`** — DataStore implementation
+- **`core:ui`** — reusable UI components and theme
+- **`core:resources`** — shared resources
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+#### **Common Modules** (`common/`)
+Shared components for the entire application:
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+- **`common:mvi`** — base classes and interfaces for MVI pattern
+- **`common:response`** — API response models
+- **`common:ui-models`** — UI data models
+- **`common:utils`** — utility functions
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+#### **Feature Modules** (`feature/`)
+Feature modules with full layer implementation:
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+- **`feature:giphy`** — Giphy functionality:
+  - `data/` — repositories
+  - `domain/` — use cases, mappers
+  - `presentation/` — ViewModels, Screens
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+#### **Other Modules**
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+- **`navigation`** — screen navigation
+- **`screens`** — screen definitions for type-safe navigation
+- **`build-logic`** — custom Gradle Convention Plugins
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+#### Modularity Advantages:
 
-## License
-For open source projects, say how it is licensed.
+- ✅ Clear separation of concerns
+- ✅ Independent modules with explicit dependencies
+- ✅ API/Implementation separation for flexibility
+- ✅ Faster build times through parallel compilation
+- ✅ Component reusability
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+---
+
+## 🔧 Technology Stack
+
+### UI Layer
+
+#### **Jetpack Compose** (100%)
+- **Compose BOM**: 2025.03.00
+- **Material3**: 1.3.1
+- Fully declarative UI without XML
+- Compose Preview for rapid development
+- Main components:
+  - `LazyVerticalGrid` for GIF grid
+  - `Scaffold`, `TopAppBar`, `Card`
+  - Custom components: `SearchBar`, `Toolbar`, `ErrorScreen`
+
+#### **Kotlin Coroutines** (1.10.1)
+- All asynchronous operations via suspend functions
+- `viewModelScope` for ViewModel coroutines
+- `withContext` for dispatcher switching
+- **DispatchersProvider** pattern for testability:
+
+#### **Kotlin Flow**
+- `MutableSharedFlow` for debouncing search queries (500 ms)
+- `Channel` for one-time effects in MVI
+- Flow operators:
+  - `debounce(500)` — delay before search
+  - `distinctUntilChanged()` — ignore duplicates
+  - `filter` — empty query filtering
+
+### Dependency Injection
+
+#### **Koin** (3.4.3)
+- **Koin Compose**: 3.4.2 — Compose integration
+- **Koin KSP**: 1.2.2 — code generation with annotations
+
+**Used Annotations:**
+- `@Module` + `@ComponentScan` — automatic dependency scanning
+- `@Single` — singleton dependencies
+- `@KoinViewModel` — ViewModels with injection
+- `koinViewModel()` — ViewModel retrieval in Composable
+
+**DI Modules:**
+- `AppModule` — application dependencies
+- `DataModule` — network dependencies (Ktor)
+- `DispatchersModule` — coroutine dispatchers
+- `DataStoreModule` — DataStore
+- `GiphyModule` — Giphy feature dependencies
+
+---
+
+### Navigation
+
+#### **Jetpack Navigation Compose** (2.8.9)
+- **Type-Safe Navigation** using `@Serializable`
+- Screen definitions via sealed classes
+
+### Network Layer
+
+#### **Ktor Client** (3.1.0)
+- **Ktor Client OkHttp** — HTTP client based on OkHttp
+- **Content Negotiation** — automatic JSON serialization/deserialization
+- **Logging** — request and response logging
+- **Error Handling** — centralized error handling
+
+#### **Kotlinx Serialization** (1.8.0)
+- `@Serializable` data classes
+- `@SerialName` for JSON field mapping
+- Type-safe JSON handling
+
+---
+
+### Image Loading
+
+#### **Coil** (2.7.0)
+- **coil-compose** — Jetpack Compose integration
+- **coil-gif** — GIF animation support
+
+### Testing
+
+#### **Unit Testing**
+- **JUnit 4** (4.13.2)
+- **MockK** (1.13.4) — mocking for Kotlin
+- **Kotlinx Coroutines Test** (1.10.1) — coroutines testing
+
+#### **UI Testing**
+- **Compose UI Test**
+- **Espresso** (3.6.1)
+
+## 🛠️ Technical Requirements
+
+- **Minimum SDK**: 26 (Android 8.0)
+- **Target SDK**: 35 (Android 15)
+- **Compile SDK**: 35
+- **Kotlin**: 2.1.0
+- **Android Gradle Plugin**: 8.9.1
+- **Java Version**: 17
+
+Demo video
+[Download demo video](media/demo.mp4)
